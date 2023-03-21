@@ -27,7 +27,7 @@ jobs:
     - id: 'deploy'
       uses: 'google-github-actions/deploy-cloud-functions@v0'
       with:
-          name: unified_alerts
+          name: rapidpro_api_client
           region: asia-south1
           description: 'Deploying function'
           memory_mb: 256
