@@ -36,4 +36,4 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           entry_point: trigger
           max_instances: 0 # Remove limitation
-          env_vars: ENV=production,TESTING=${{ secrets.TESTING }},DEBUG=${{ secrets.DEBUG }},DATASET_ID=${{ secrets.DATASET_ID }},SLACK_CHANNEL=${{ secrets.SLACK_CHANNEL }},SLACK_TOKEN=${{ secrets.SLACK_TOKEN }},DATASET_LOCATION=${{ secrets.DATASET_LOCATION }},SECRET_KEY=${{ secrets.SECRET_KEY }},GOOGLE_APPLICATION_CREDENTIALS=${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          env_vars: ENV=production,TESTING=${{ secrets.TESTING }},DEBUG=${{ secrets.DEBUG }},DATASET_ID=${{ secrets.DATASET_ID }},DATASET_LOCATION=${{ secrets.DATASET_LOCATION }},SECRET_KEY=${{ secrets.SECRET_KEY }},GOOGLE_APPLICATION_CREDENTIALS=${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_NAME=${{ secrets.DB_NAME }},DB_PORT=${{ secrets.DB_PORT }},CONNECTION_NAME=${{ secrets.CONNECTION_NAME }},RAPID_PRO_AUTHORIZATION_TOKEN=${{ secrets.RAPID_PRO_AUTHORIZATION_TOKEN }},CHURNED_USER_GROUP_NAME=${{ secrets.CHURNED_USER_GROUP_NAME }}
