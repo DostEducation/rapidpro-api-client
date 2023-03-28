@@ -1,0 +1,39 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: 'actions/checkout@v3'
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: 'Create GCP BigQuery Credential file'
+      run: touch /home/runner/work/rapidpro-api-client/rapidpro-api-client/big-query-credentials.json | base64
+
+    - name: 'Add Credential from Github Secrets'
+      env:
+        DATA: ${{ secrets.GOOGLE_SERVICE_CREDENTIALS }}
+      run: echo $DATA > /home/runner/work/rapidpro-api-client/rapidpro-api-client/big-query-credentials.json
+
+    - id: 'deploy'
+      uses: 'google-github-actions/deploy-cloud-functions@v0'
+      with:
+          name: rapidpro_api_client
+          region: asia-south1
+          description: 'Deploying function'
+          memory_mb: 256
+          timeout: 540
+          runtime: python39
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          entry_point: trigger
+          max_instances: 0 # Remove limitation
+          env_vars: ENV=production,TESTING=${{ secrets.TESTING }},DEBUG=${{ secrets.DEBUG }},DATASET_ID=${{ secrets.DATASET_ID }},SLACK_CHANNEL=${{ secrets.SLACK_CHANNEL }},SLACK_TOKEN=${{ secrets.SLACK_TOKEN }},DATASET_LOCATION=${{ secrets.DATASET_LOCATION }},SECRET_KEY=${{ secrets.SECRET_KEY }},GOOGLE_APPLICATION_CREDENTIALS=${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
