@@ -3,17 +3,30 @@ from google.cloud import bigquery
 from datetime import datetime
 from api.models.user_program import UserProgram
 from api.models.churned_users import ChurnedUsers
-from api.services.rapid_pro_services.update_user_group import UpdateUserGroup
-from flask import jsonify
+from api.services.rapid_pro_services.update_user_group_service import (
+    UpdateUserGroupService,
+)
 from sqlalchemy import update
 
 
-class ChurnUsers(object):
+class ChurnUsersService(object):
     def __init__(self):
         self.bigquery_client = bigquery.Client()
         self.dataset_id = app.config["DATASET_ID"]
 
     def fetch_users_to_mark_churned(self):
+        query = self.query_to_fetch_users_to_mark_churn()
+        data = self.bigquery_client.query(query)
+        data_list = list(data)
+        user_added = self.add_churned_user(data_list)
+        churned_group = app.config["CHURNED_USER_GROUP_NAME"]
+        if user_added:
+            rp_updated = UpdateUserGroupService().add_group(
+                data_list, new_group=churned_group
+            )
+        return True
+
+    def query_to_fetch_users_to_mark_churn(self):
         query = f"""
             With user_details as (
                     SELECT
@@ -55,13 +68,7 @@ class ChurnUsers(object):
                 WHERE
                 vc.user_phone IS NULL
         """
-        data = self.bigquery_client.query(query)
-        data_list = list(data)
-        user_added = self.add_churned_user(data_list)
-        churned_group = app.config["CHURNED_USER_GROUP_NAME"]
-        if user_added:
-            rp_updated = UpdateUserGroup().add_group(data_list, new_group=churned_group)
-        return True
+        return query
 
     def mark_users_as_churned(self, user_ids):
         update_query = (
@@ -90,4 +97,4 @@ class ChurnUsers(object):
         db.session.bulk_save_objects(churned_users)
         db.session.commit()
         status_updated = self.mark_users_as_churned(user_ids)
-        return True
+        return status_updated
