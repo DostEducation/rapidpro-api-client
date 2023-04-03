@@ -14,7 +14,7 @@ class ChurnUsersService(object):
         self.bigquery_client = bigquery.Client()
         self.dataset_id = app.config["DATASET_ID"]
 
-    def fetch_users_to_mark_churned(self):
+    def process_churned_user_data(self):
         query = self.query_to_fetch_users_to_mark_churn()
         data = self.bigquery_client.query(query)
         data_list = list(data)

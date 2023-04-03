@@ -7,7 +7,7 @@ def trigger(request):
         try:
             request_type = request.json["request_type"]
             if request_type == "churn_users":
-                request_handler = ChurnUsersService().fetch_users_to_mark_churned()
+                request_handler = ChurnUsersService().process_churned_user_data()
             else:
                 return jsonify({"error": "Invalid request type"})
         except Exception as e:
