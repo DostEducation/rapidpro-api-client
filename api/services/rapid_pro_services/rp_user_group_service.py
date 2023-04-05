@@ -3,7 +3,7 @@ import requests
 from api.models.user_group import UserGroup
 
 
-class UpdateUserGroupService:
+class RpUserGroupService:
     def fetch_existing_groups_of_user(self, user_id):
         groups = []
         user_group = UserGroup.query.get_by_user_id(user_id)

@@ -1,11 +1,9 @@
 from api import app, db
 from google.cloud import bigquery
-from datetime import datetime
+from datetime import datetime, timedelta
 from api.models.user_program import UserProgram
 from api.models.churned_users import ChurnedUsers
-from api.services.rapid_pro_services.update_user_group_service import (
-    UpdateUserGroupService,
-)
+from api.services.rapid_pro_services.rp_user_group_service import RpUserGroupService
 from sqlalchemy import update
 
 
@@ -15,14 +13,17 @@ class ChurnUsersService(object):
         self.dataset_id = app.config["DATASET_ID"]
 
     def process_churned_user_data(self):
-        query = self.query_to_fetch_users_to_mark_churn()
-        data = self.bigquery_client.query(query)
-        data_list = list(data)
-        user_added = self.add_churned_user(data_list)
-        churned_group = app.config["CHURNED_USER_GROUP_NAME"]
-        if user_added:
-            rp_updated = UpdateUserGroupService().add_group(
-                data_list, new_group=churned_group
+        query_to_fetch_churned_users = self.query_to_fetch_users_to_mark_churn()
+        churned_users_data = self.bigquery_client.query(query_to_fetch_churned_users)
+
+        # Convert churned users data to a list so that we can iterate over it multiple times
+        churned_users_list = list(churned_users_data)
+
+        churned_users_added = self.add_churned_user(churned_users_list)
+        churned_user_group_name = app.config["CHURNED_USER_GROUP_NAME"]
+        if churned_users_added:
+            RpUserGroupService().add_group(
+                churned_users_list, new_group=churned_user_group_name
             )
         return True
 
@@ -71,18 +72,20 @@ class ChurnUsersService(object):
         return query
 
     def mark_users_as_churned(self, user_ids):
-        update_query = (
+        update_churned_users_status = (
             update(UserProgram)
             .where(UserProgram.user_id.in_(user_ids))
             .values(status="churned")
         )
-        db.session.execute(update_query)
+        db.session.execute(update_churned_users_status)
         db.session.commit()
         return True
 
     def add_churned_user(self, data):
         churned_users = []
         user_ids = []
+        istnow = datetime.utcnow() + timedelta(hours=5, minutes=30)
+        start_date = istnow.strftime("%Y-%m-%d")
         for record in data:
             user_ids.append(record.user_id)
             churned_user = ChurnedUsers(
@@ -90,7 +93,7 @@ class ChurnUsersService(object):
                 user_program_id=record.user_program_id,
                 user_phone=record.user_phone,
                 previous_status=record.status,
-                start_date=datetime.now().date(),
+                start_date=start_date,
                 end_date=None,
             )
             churned_users.append(churned_user)
