@@ -22,7 +22,7 @@ An API to connect with Rapid Pro to update fields or groups by triggering it.
 3. Activate the virtual environment
     ```sh
     source ./venv/bin/activate  (For Bash)
-    .\venv\Scripts\activate   (For Powershell/CMD)
+    ./venv/Scripts/activate   (For Powershell/CMD)
     ```
 4. Install the dependencies:
     ```sh
